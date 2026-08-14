@@ -2,18 +2,7 @@ import { access, mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import process from 'node:process';
 import { faker } from '@faker-js/faker';
-
-type Asset = {
-  id: string;
-  name: string;
-  ticker: string;
-  assetType: string;
-  currency: string;
-  quantity: number;
-  unitPrice: number;
-  marketValue: number;
-  updatedAt: string;
-};
+import type { Asset } from '../src/types/asset';
 
 const DEFAULT_COUNT = 50_000;
 const SEED = 20260814;

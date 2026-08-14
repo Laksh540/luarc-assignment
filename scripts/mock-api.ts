@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import process from 'node:process';
+import type { Asset } from '../src/types/asset';
 
 const DEFAULT_PORT = 3001;
 const LOCAL_HOST = '127.0.0.1';
@@ -10,18 +11,6 @@ const ASSETS_PATH = resolve(process.cwd(), 'data/assets.json');
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 100;
-
-type Asset = {
-  id: string;
-  name: string;
-  ticker: string;
-  assetType: string;
-  currency: string;
-  quantity: number;
-  unitPrice: number;
-  marketValue: number;
-  updatedAt: string;
-};
 
 function isAsset(value: unknown): value is Asset {
   if (typeof value !== 'object' || value === null) {
