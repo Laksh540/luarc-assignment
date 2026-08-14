@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate-assets": "node --experimental-strip-types scripts/generate-assets.ts",
+    "mock-api": "node --experimental-strip-types scripts/mock-api.ts",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "typecheck": "tsc -b",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@faker-js/faker": "^10.5.0",
     "@tailwindcss/vite": "^4.3.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

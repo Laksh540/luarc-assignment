@@ -32,6 +32,45 @@ Preview the production build locally:
 npm run preview
 ```
 
+### Mock API
+
+The mock API serves paginated assets from `data/assets.json` at
+`http://localhost:3001/assets`. The optional `search` parameter performs a
+case-insensitive substring search across asset names and ticker symbols. The
+`assetType` and `currency` parameters provide case-insensitive exact-match
+filters. Search and filters are applied before pagination.
+
+Examples:
+
+```text
+GET /assets?search=apple&page=1&limit=50
+GET /assets?search=AAPL
+GET /assets?assetType=Equity&currency=USD&page=1&limit=50
+GET /assets?search=apple&assetType=Equity
+```
+
+Responses have the shape:
+
+```json
+{
+  "assets": [],
+  "metadata": {
+    "total": 50000,
+    "page": 1,
+    "limit": 50,
+    "totalPages": 1000,
+    "hasNextPage": true,
+    "hasPreviousPage": false,
+    "nextPage": 2
+  }
+}
+```
+
+The metadata is calculated after search and filters are applied. When no next
+page exists, `hasNextPage` is `false` and `nextPage` is `null`. Clients can
+continue loading results while `hasNextPage` is `true`, using `nextPage` for
+the following request.
+
 The project uses React, TypeScript, Vite, and Tailwind CSS.
 
 ---
