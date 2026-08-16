@@ -60,8 +60,11 @@ function getPort(value: string | undefined): number {
   return port;
 }
 
-function setCorsHeaders(response: ServerResponse): void {
-  response.setHeader('Access-Control-Allow-Origin', FRONTEND_ORIGIN);
+function setCorsHeaders(response: ServerResponse, request?: IncomingMessage): void {
+  const origin = request?.headers.origin;
+  const isAllowedOrigin =
+    origin && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+  response.setHeader('Access-Control-Allow-Origin', isAllowedOrigin ? origin : FRONTEND_ORIGIN);
   response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   response.setHeader('Vary', 'Origin');
@@ -71,10 +74,11 @@ function sendJson(
   response: ServerResponse,
   statusCode: number,
   body: unknown,
+  request?: IncomingMessage,
 ): void {
   const payload = JSON.stringify(body);
 
-  setCorsHeaders(response);
+  setCorsHeaders(response, request);
   response.writeHead(statusCode, {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(payload),
@@ -138,6 +142,7 @@ function filterAssets(
 
 function handleAssetsRequest(
   requestUrl: URL,
+  request: IncomingMessage,
   response: ServerResponse,
   assets: readonly Asset[],
 ): void {
@@ -160,22 +165,32 @@ function handleAssetsRequest(
     const hasPreviousPage = page > 1 && page <= totalPages;
     const hasNextPage = page < totalPages;
 
-    sendJson(response, 200, {
-      assets: filteredAssets.slice(start, start + limit),
-      metadata: {
-        total,
-        page,
-        limit,
-        totalPages,
-        hasNextPage,
-        hasPreviousPage,
-        nextPage: hasNextPage ? page + 1 : null,
+    sendJson(
+      response,
+      200,
+      {
+        assets: filteredAssets.slice(start, start + limit),
+        metadata: {
+          total,
+          page,
+          limit,
+          totalPages,
+          hasNextPage,
+          hasPreviousPage,
+          nextPage: hasNextPage ? page + 1 : null,
+        },
       },
-    });
+      request,
+    );
   } catch (error: unknown) {
-    sendJson(response, 400, {
-      error: error instanceof Error ? error.message : 'Invalid pagination parameters.',
-    });
+    sendJson(
+      response,
+      400,
+      {
+        error: error instanceof Error ? error.message : 'Invalid pagination parameters.',
+      },
+      request,
+    );
   }
 }
 
@@ -185,7 +200,7 @@ function handleRequest(
   assets: readonly Asset[],
 ): void {
   if (request.method === 'OPTIONS') {
-    setCorsHeaders(response);
+    setCorsHeaders(response, request);
     response.writeHead(204);
     response.end();
     return;
@@ -194,16 +209,16 @@ function handleRequest(
   const requestUrl = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
 
   if (request.method === 'GET' && requestUrl.pathname === '/health') {
-    sendJson(response, 200, { status: 'ok', service: 'mock-api' });
+    sendJson(response, 200, { status: 'ok', service: 'mock-api' }, request);
     return;
   }
 
   if (request.method === 'GET' && requestUrl.pathname === '/assets') {
-    handleAssetsRequest(requestUrl, response, assets);
+    handleAssetsRequest(requestUrl, request, response, assets);
     return;
   }
 
-  sendJson(response, 404, { error: 'Not found' });
+  sendJson(response, 404, { error: 'Not found' }, request);
 }
 
 function main(): void {

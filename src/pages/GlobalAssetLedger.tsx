@@ -1,41 +1,94 @@
 import { useMemo, useState } from "react";
+import { AssetTable } from "../components/AssetTable";
+import { Dropdown } from "../components/Dropdown";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
+import { SearchInput } from "../components/SearchInput";
+import { ASSET_TYPE_OPTIONS, CURRENCY_OPTIONS } from "../constants/filters";
 import { useAssets } from "../hooks/useAssets";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 function GlobalAssetLedger() {
   const [search, setSearch] = useState("");
+  const [assetType, setAssetType] = useState("");
+  const [currency, setCurrency] = useState("");
+
   const debouncedSearch = useDebouncedValue(search, 300);
+  const trimmedSearch = debouncedSearch.trim();
 
   const query = useMemo(
-    () => ({ page: 1, limit: 50, search: debouncedSearch }),
-    [debouncedSearch]
+    () => ({
+      page: 1,
+      limit: 50,
+      ...(trimmedSearch && { search: trimmedSearch }),
+      ...(assetType && { assetType }),
+      ...(currency && { currency }),
+    }),
+    [trimmedSearch, assetType, currency]
   );
   const result = useAssets(query);
 
+  const isSearching =
+    search !== debouncedSearch ||
+    (result.status === "loading" && trimmedSearch.length > 0);
+
+  const isInitialLoading = result.status === "loading";
+
+  const emptyMessage = useMemo(() => {
+    const filters: string[] = [];
+    if (trimmedSearch) filters.push(`matching "${trimmedSearch}"`);
+    if (assetType) filters.push(`with type "${assetType}"`);
+    if (currency) filters.push(`in currency "${currency}"`);
+
+    if (filters.length === 0) {
+      return undefined;
+    }
+    return `No assets found ${filters.join(" and ")}.`;
+  }, [trimmedSearch, assetType, currency]);
+
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
-      <section className="mx-auto max-w-3xl">
+      <section className="mx-auto max-w-4xl">
         <header className="mb-6">
           <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Global Asset Ledger
           </h1>
           <p className="mt-2 text-base text-slate-400">
-            Task 21 &mdash; Global Asset Ledger page.
+            Search and browse assets across the global ledger.
           </p>
 
-          <input
-            type="text"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search assets…"
-            className="mt-6 w-full rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-slate-100 placeholder-slate-500 outline-none focus:border-cyan-500"
-          />
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <SearchInput
+              value={search}
+              onChange={setSearch}
+              isSearching={isSearching}
+              className="flex-1"
+            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Dropdown
+                id="filter-asset-type"
+                label="Filter by Asset Type"
+                value={assetType}
+                options={ASSET_TYPE_OPTIONS}
+                onChange={setAssetType}
+                placeholder="All Asset Types"
+                className="w-full sm:w-44"
+              />
+              <Dropdown
+                id="filter-currency"
+                label="Filter by Currency"
+                value={currency}
+                options={CURRENCY_OPTIONS}
+                onChange={setCurrency}
+                placeholder="All Currencies"
+                className="w-full sm:w-40"
+              />
+            </div>
+          </div>
         </header>
 
-        {result.status === "loading" ? <LoadingState /> : null}
+        {isInitialLoading ? <LoadingState /> : null}
 
         {result.status === "error" ? (
           <ErrorState message={result.error.message} onRetry={result.refetch} />
@@ -43,22 +96,21 @@ function GlobalAssetLedger() {
 
         {result.status === "success" ? (
           result.data.assets.length === 0 ? (
-            <EmptyState />
+            <EmptyState message={emptyMessage} />
           ) : (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8">
+            <div className="space-y-3">
               <p className="text-sm text-slate-400">
-                Loaded{" "}
+                Showing{" "}
                 <span className="font-semibold text-cyan-300">
-                  {result.data.assets.length}
+                  {result.data.assets.length.toLocaleString()}
                 </span>{" "}
-                assets on page {result.data.metadata.page}.
+                of{" "}
+                <span className="font-semibold text-slate-200">
+                  {result.data.metadata.total.toLocaleString()}
+                </span>{" "}
+                assets
               </p>
-              <p className="mt-2 text-3xl font-semibold text-white">
-                {result.data.metadata.total.toLocaleString()}
-                <span className="ml-2 text-base font-normal text-slate-400">
-                  total assets
-                </span>
-              </p>
+              <AssetTable assets={result.data.assets} />
             </div>
           )
         ) : null}
