@@ -33,7 +33,7 @@ export function AssetTable({ assets }: AssetTableProps) {
     <div className="asset-table-scroll custom-scrollbar sm:rounded-2xl sm:border sm:border-slate-800">
       <table className="asset-table w-full min-w-[700px] border-collapse text-sm">
         <thead className="hidden sm:table-header-group">
-          <tr className="sticky top-0 z-10 border-b border-slate-800 bg-slate-900/95 backdrop-blur-sm">
+          <tr className="sticky top-[68px] z-10 border-b border-slate-800 bg-slate-900">
             {COLUMNS.map((col) => (
               <th
                 key={col.key}

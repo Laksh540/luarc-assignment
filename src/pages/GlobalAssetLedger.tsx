@@ -1,3 +1,4 @@
+import { SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AssetTable } from "../components/AssetTable";
 import { Dropdown } from "../components/Dropdown";
@@ -13,6 +14,7 @@ function GlobalAssetLedger() {
   const [search, setSearch] = useState("");
   const [assetType, setAssetType] = useState("");
   const [currency, setCurrency] = useState("");
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const debouncedSearch = useDebouncedValue(search, 300);
   const trimmedSearch = debouncedSearch.trim();
@@ -58,35 +60,56 @@ function GlobalAssetLedger() {
             Search and browse assets across the global ledger.
           </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              isSearching={isSearching}
-              className="flex-1"
-            />
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Dropdown
-                id="filter-asset-type"
-                label="Filter by Asset Type"
-                value={assetType}
-                options={ASSET_TYPE_OPTIONS}
-                onChange={setAssetType}
-                placeholder="All Asset Types"
-                className="w-full sm:w-44"
-              />
-              <Dropdown
-                id="filter-currency"
-                label="Filter by Currency"
-                value={currency}
-                options={CURRENCY_OPTIONS}
-                onChange={setCurrency}
-                placeholder="All Currencies"
-                className="w-full sm:w-40"
-              />
-            </div>
-          </div>
         </header>
+
+        <div className="sticky top-0 z-30 -mx-6 border-y border-slate-800 bg-slate-950 px-6 py-3">
+            <button
+              type="button"
+              onClick={() => setMobileFiltersOpen((open) => !open)}
+              aria-expanded={mobileFiltersOpen}
+              aria-controls="asset-filters"
+              className="flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3 text-sm font-medium text-slate-300 transition-colors hover:border-slate-700 hover:text-slate-100 sm:hidden"
+            >
+              {mobileFiltersOpen ? (
+                <X className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+              )}
+              {mobileFiltersOpen ? "Close filters" : "Search and filter"}
+            </button>
+
+            <div
+              id="asset-filters"
+              className={`${mobileFiltersOpen ? "flex" : "hidden"} flex-col gap-3 sm:flex sm:flex-row sm:items-center`}
+            >
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                isSearching={isSearching}
+                className="flex-1"
+              />
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Dropdown
+                  id="filter-asset-type"
+                  label="Filter by Asset Type"
+                  value={assetType}
+                  options={ASSET_TYPE_OPTIONS}
+                  onChange={setAssetType}
+                  placeholder="All Asset Types"
+                  className="w-full sm:w-44"
+                />
+                <Dropdown
+                  id="filter-currency"
+                  label="Filter by Currency"
+                  value={currency}
+                  options={CURRENCY_OPTIONS}
+                  onChange={setCurrency}
+                  placeholder="All Currencies"
+                  className="w-full sm:w-40"
+                />
+              </div>
+            </div>
+        </div>
 
         {isInitialLoading ? <LoadingState /> : null}
 
