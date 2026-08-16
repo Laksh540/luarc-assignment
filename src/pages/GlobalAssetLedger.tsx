@@ -53,7 +53,7 @@ function GlobalAssetLedger() {
     <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
       <section className="mx-auto max-w-4xl">
         <header className="mb-6">
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Global Asset Ledger
           </h1>
           <p className="mt-2 text-base text-slate-400">

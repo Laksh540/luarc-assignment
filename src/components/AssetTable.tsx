@@ -1,4 +1,5 @@
 import type { Asset } from "../types/asset";
+import { formatCurrency } from "../utils/format";
 
 type AssetTableProps = {
   assets: Asset[];
@@ -15,12 +16,13 @@ const COLUMNS: { key: keyof Asset; label: string; align: "left" | "right" }[] =
     { key: "marketValue", label: "Market Value", align: "right" },
   ];
 
-function formatCellValue(key: keyof Asset, value: Asset[keyof Asset]): string {
+function formatCellValue(
+  key: keyof Asset,
+  value: Asset[keyof Asset],
+  asset: Asset
+): string {
   if (key === "unitPrice" || key === "marketValue") {
-    return (value as number).toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    return formatCurrency(value as number, asset.currency);
   }
   if (key === "quantity") {
     return (value as number).toLocaleString("en-US");
@@ -57,7 +59,7 @@ export function AssetTable({ assets }: AssetTableProps) {
             >
               {COLUMNS.map((col) => {
                 const value = asset[col.key];
-                const formatted = formatCellValue(col.key, value);
+                const formatted = formatCellValue(col.key, value, asset);
                 const isMonetary =
                   col.key === "unitPrice" || col.key === "marketValue";
 
