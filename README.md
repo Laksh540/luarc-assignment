@@ -12,7 +12,16 @@ For local configuration, copy `.env.example` to `.env` and update values as need
 
 ## Development
 
-Start the Vite development server:
+Start the frontend and mock API together:
+
+```bash
+npm run dev:all
+```
+
+This starts the Vite development server and the mock API on port 3001. Press
+`Ctrl+C` to stop both processes.
+
+To start only the Vite development server:
 
 ```bash
 npm run dev

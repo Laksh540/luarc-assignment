@@ -8,6 +8,7 @@ import { LoadingState } from "../components/LoadingState";
 import { SearchInput } from "../components/SearchInput";
 import { ASSET_TYPE_OPTIONS, CURRENCY_OPTIONS } from "../constants/filters";
 import { useAssets } from "../hooks/useAssets";
+import { useAssetTable } from "../hooks/useAssetTable";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 function GlobalAssetLedger() {
@@ -30,6 +31,9 @@ function GlobalAssetLedger() {
     [trimmedSearch, assetType, currency]
   );
   const result = useAssets(query);
+
+  const assetRows = useMemo(() => result.data?.assets ?? [], [result.data]);
+  const table = useAssetTable(assetRows, result.data?.metadata);
 
   const isSearching =
     search !== debouncedSearch ||
@@ -125,7 +129,7 @@ function GlobalAssetLedger() {
               <p className="text-sm text-slate-400">
                 Showing{" "}
                 <span className="font-semibold text-cyan-300">
-                  {result.data.assets.length.toLocaleString()}
+                  {table.getRowModel().rows.length.toLocaleString()}
                 </span>{" "}
                 of{" "}
                 <span className="font-semibold text-slate-200">
@@ -133,7 +137,7 @@ function GlobalAssetLedger() {
                 </span>{" "}
                 assets
               </p>
-              <AssetTable assets={result.data.assets} />
+              <AssetTable table={table} />
             </div>
           )
         ) : null}
