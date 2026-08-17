@@ -41,11 +41,21 @@ function AssetRowCells({ row }: { row: Row<Asset> }) {
           meta.align === "right" ? "text-right" : "text-left"
         } ${textClass}`}
       >
-        {meta.kind === "ticker" ? (
-          <span className="asset-ticker">{rendered}</span>
-        ) : (
-          rendered
-        )}
+        <span
+          className={`asset-cell${
+            cell.column.id === "quantity" ||
+            cell.column.id === "unitPrice" ||
+            cell.column.id === "marketValue"
+              ? " asset-cell-wrap"
+              : ""
+          }`}
+        >
+          {meta.kind === "ticker" ? (
+            <span className="asset-ticker">{rendered}</span>
+          ) : (
+            rendered
+          )}
+        </span>
       </td>
     );
   });
@@ -101,7 +111,16 @@ export function AssetTable({ table, onEndReached }: AssetTableProps) {
       ref={containerRef}
       className="asset-table-scroll custom-scrollbar sm:rounded-2xl sm:border sm:border-slate-800"
     >
-      <table className="asset-table w-full min-w-[700px] border-collapse text-sm">
+      <table className="asset-table w-full border-collapse text-sm">
+        <colgroup>
+          <col style={{ width: "150px" }} />
+          <col style={{ width: "85px" }} />
+          <col style={{ width: "110px" }} />
+          <col style={{ width: "112px" }} />
+          <col style={{ width: "108px" }} />
+          <col style={{ width: "120px" }} />
+          <col style={{ width: "150px" }} />
+        </colgroup>
         <thead className="hidden sm:table-header-group">
           {table.getHeaderGroups().map((headerGroup) => (
             <tr
@@ -118,7 +137,7 @@ export function AssetTable({ table, onEndReached }: AssetTableProps) {
                       meta.align === "right" ? "text-right" : "text-left"
                     }`}
                   >
-                    {meta.label}
+                    <span className="asset-cell">{meta.label}</span>
                   </th>
                 );
               })}

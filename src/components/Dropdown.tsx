@@ -112,7 +112,7 @@ export function Dropdown({
                 role="option"
                 aria-selected={isSelected}
                 onClick={() => handleSelect(option.value)}
-                className={`flex cursor-pointer items-center justify-between px-3.5 py-2.5 text-sm transition-colors ${
+                className={`flex min-h-[44px] touch-manipulation cursor-pointer items-center justify-between px-3.5 py-2.5 text-sm transition-colors ${
                   isSelected
                     ? 'bg-cyan-950/50 font-medium text-slate-100'
                     : 'text-slate-300 hover:bg-slate-800/70 hover:text-white'

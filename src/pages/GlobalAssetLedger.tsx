@@ -1,11 +1,11 @@
 import { SlidersHorizontal, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { AssetTable } from "../components/AssetTable";
+import { AssetTableSkeleton } from "../components/AssetTableSkeleton";
 import { Dropdown } from "../components/Dropdown";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingMore } from "../components/LoadingMore";
-import { LoadingState } from "../components/LoadingState";
 import { SearchInput } from "../components/SearchInput";
 import { ASSET_TYPE_OPTIONS, CURRENCY_OPTIONS } from "../constants/filters";
 import { useAssetTable } from "../hooks/useAssetTable";
@@ -60,19 +60,19 @@ function GlobalAssetLedger() {
   }, [trimmedSearch, assetType, currency]);
 
   return (
-    <main className="min-h-screen bg-slate-950 px-6 py-12 text-slate-100">
+    <main className="min-h-screen bg-slate-950 px-4 py-8 text-slate-100 sm:px-6 sm:py-12">
       <section className="mx-auto max-w-4xl">
         <header className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
+          <h1 className="text-xl font-bold tracking-tight text-white sm:text-3xl">
             Global Asset Ledger
           </h1>
-          <p className="mt-2 text-base text-slate-400">
+          <p className="mt-2 text-sm text-slate-400 sm:text-base">
             Search and browse assets across the global ledger.
           </p>
 
         </header>
 
-        <div className="sticky top-0 z-30 -mx-6 border-y border-slate-800 bg-slate-950 px-6 py-3">
+        <div className="sticky top-0 z-30 -mx-4 border-y border-slate-800 bg-slate-950 px-4 py-3 sm:-mx-6 sm:px-6">
             <button
               type="button"
               onClick={() => setMobileFiltersOpen((open) => !open)}
@@ -121,10 +121,14 @@ function GlobalAssetLedger() {
             </div>
         </div>
 
-        {isInitialLoading ? <LoadingState /> : null}
+        {isInitialLoading ? <AssetTableSkeleton /> : null}
 
         {status === "error" ? (
-          <ErrorState message={result.error!.message} onRetry={refetch} />
+          <ErrorState
+            message={result.error!.message}
+            onRetry={refetch}
+            isLoading={isInitialLoading}
+          />
         ) : null}
 
         {status === "success" ? (
@@ -132,7 +136,10 @@ function GlobalAssetLedger() {
             <EmptyState message={emptyMessage} />
           ) : (
             <div className="space-y-3">
-              <p className="text-sm text-slate-400">
+              <p
+                className="max-w-full text-sm leading-6 text-slate-400"
+                aria-live="polite"
+              >
                 Showing{" "}
                 <span className="font-semibold text-cyan-300">
                   {assets.length.toLocaleString()}
