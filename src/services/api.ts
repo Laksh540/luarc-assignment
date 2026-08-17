@@ -31,6 +31,14 @@ async function request<T>(path: string, signal?: AbortSignal): Promise<T> {
   return (await response.json()) as T;
 }
 
+export function fetchAssetsPage(
+  query: Omit<AssetQuery, "page">,
+  page: number,
+  signal?: AbortSignal,
+): Promise<AssetResponse> {
+  return getAssets({ ...query, page }, signal);
+}
+
 export function getAssets(query: AssetQuery, signal?: AbortSignal): Promise<AssetResponse> {
   const params = new URLSearchParams({
     page: String(query.page),

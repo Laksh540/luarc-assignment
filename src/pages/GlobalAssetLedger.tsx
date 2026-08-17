@@ -4,12 +4,13 @@ import { AssetTable } from "../components/AssetTable";
 import { Dropdown } from "../components/Dropdown";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
+import { LoadingMore } from "../components/LoadingMore";
 import { LoadingState } from "../components/LoadingState";
 import { SearchInput } from "../components/SearchInput";
 import { ASSET_TYPE_OPTIONS, CURRENCY_OPTIONS } from "../constants/filters";
-import { useAssets } from "../hooks/useAssets";
 import { useAssetTable } from "../hooks/useAssetTable";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { useInfiniteAssets } from "../hooks/useInfiniteAssets";
 
 function GlobalAssetLedger() {
   const [search, setSearch] = useState("");
@@ -22,7 +23,6 @@ function GlobalAssetLedger() {
 
   const query = useMemo(
     () => ({
-      page: 1,
       limit: 50,
       ...(trimmedSearch && { search: trimmedSearch }),
       ...(assetType && { assetType }),
@@ -30,16 +30,22 @@ function GlobalAssetLedger() {
     }),
     [trimmedSearch, assetType, currency]
   );
-  const result = useAssets(query);
+  const result = useInfiniteAssets(query);
 
-  const assetRows = useMemo(() => result.data?.assets ?? [], [result.data]);
-  const table = useAssetTable(assetRows, result.data?.metadata);
+  const {
+    assets,
+    metadata,
+    status,
+    isInitialLoading,
+    isLoadingMore,
+    loadMore,
+    refetch,
+  } = result;
+  const table = useAssetTable(assets, metadata ?? undefined);
 
   const isSearching =
     search !== debouncedSearch ||
-    (result.status === "loading" && trimmedSearch.length > 0);
-
-  const isInitialLoading = result.status === "loading";
+    (isInitialLoading && trimmedSearch.length > 0);
 
   const emptyMessage = useMemo(() => {
     const filters: string[] = [];
@@ -117,27 +123,28 @@ function GlobalAssetLedger() {
 
         {isInitialLoading ? <LoadingState /> : null}
 
-        {result.status === "error" ? (
-          <ErrorState message={result.error.message} onRetry={result.refetch} />
+        {status === "error" ? (
+          <ErrorState message={result.error!.message} onRetry={refetch} />
         ) : null}
 
-        {result.status === "success" ? (
-          result.data.assets.length === 0 ? (
+        {status === "success" ? (
+          assets.length === 0 ? (
             <EmptyState message={emptyMessage} />
           ) : (
             <div className="space-y-3">
               <p className="text-sm text-slate-400">
                 Showing{" "}
                 <span className="font-semibold text-cyan-300">
-                  {table.getRowModel().rows.length.toLocaleString()}
+                  {assets.length.toLocaleString()}
                 </span>{" "}
                 of{" "}
                 <span className="font-semibold text-slate-200">
-                  {result.data.metadata.total.toLocaleString()}
+                  {metadata!.total.toLocaleString()}
                 </span>{" "}
                 assets
               </p>
-              <AssetTable table={table} />
+              <AssetTable table={table} onEndReached={loadMore} />
+              {isLoadingMore ? <LoadingMore /> : null}
             </div>
           )
         ) : null}
